@@ -13,6 +13,17 @@ app.use(express.json());
 
 app.use(express.static(path.join(__dirname, '/public')))
 
+// include and initialize the rollbar library with your access token
+var Rollbar = require('rollbar')
+var rollbar = new Rollbar({
+  accessToken: '8d63c0ef160049e3b033299b746fafb0',
+  captureUncaught: true,
+  captureUnhandledRejections: true,
+})
+
+// record a generic message and send it to Rollbar
+// rollbar.log('Hello world!')
+
 // Add up the total health of all the robots
 const calculateTotalHealth = (robots) =>
   robots.reduce((total, { health }) => total + health, 0);
@@ -41,9 +52,14 @@ const calculateHealthAfterAttack = ({ playerDuo, compDuo }) => {
 app.get("/api/robots", (req, res) => {
   try {
     res.status(200).send(botsArr);
+
+    rollbar.info('Robot info was requested and sent to a user.')
+
   } catch (error) {
     console.error("ERROR GETTING BOTS", error);
     res.sendStatus(400);
+
+    rollbar.warning("Robot Array did not display")
   }
 });
 
@@ -51,9 +67,14 @@ app.get("/api/robots/shuffled", (req, res) => {
   try {
     let shuffled = shuffle(bots);
     res.status(200).send(shuffled);
+
+    rollbar.info("Robots have properly shuffled")
+
   } catch (error) {
     console.error("ERROR GETTING SHUFFLED BOTS", error);
     res.sendStatus(400);
+
+    rollbar.warning("Robots are not being shuffled properly.")
   }
 });
 
